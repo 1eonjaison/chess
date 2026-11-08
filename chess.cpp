@@ -351,7 +351,6 @@ void showboard(Game g){
     cout << "  +-----------------+\n    a b c d e f g h\nUppercase = White, lowercase = Black\n";
 }
 
-
 bool squareattacked(Game g, int row, int col, bool white)
 {
     int direction = white ? -1 : 1;
@@ -429,6 +428,7 @@ void addmove(vector<Move> & moves, Game g, int from, int to, bool ep = false, bo
     }
     else moves.push_back({ from, to, ' ', ep, castle});
 }
+
 vector<Move> possiblemoves(Game g)
 {
     vector<Move> moves;
@@ -527,6 +527,7 @@ vector<Move> possiblemoves(Game g)
     }
     return moves;
 }
+
 Game makemove(Game g, Move m)
 {
     int fr = m.from / 8, fc = m.from % 8, tr = m.to / 8, tc = m.to % 8;
@@ -578,6 +579,7 @@ Game makemove(Game g, Move m)
     g.whiteTurn = ! g.whiteTurn;
     return g;
 }
+
 vector<Move> legalmoves(Game g)
 {
     vector<Move> result;
@@ -596,6 +598,7 @@ string movetext(Move m)
     if (m.promotion != ' ') s += m.promotion;
     return s;
 }
+
 int piecevalue(char p)
 {
     p = (char)tolower(p);
@@ -606,6 +609,7 @@ int piecevalue(char p)
     if (p == 'q') return 900;
     return 0;
 }
+
 int evaluateboard(Game g)
 {
     int score = 0;
@@ -623,6 +627,7 @@ int evaluateboard(Game g)
     }
     return g.whiteTurn ? score: - score;
 }
+
 int minimax(Game g, int depth, int alpha, int beta)
 {
     vector<Move> moves = legalmoves(g);
@@ -638,6 +643,7 @@ int minimax(Game g, int depth, int alpha, int beta)
     }
     return best;
 }
+
 Move computermove(Game g, int difficulty)
 {
     vector<Move> moves = legalmoves(g);
@@ -656,6 +662,7 @@ Move computermove(Game g, int difficulty)
     }
     return chosen;
 }
+
 string positionkey(Game g)
 {
     string key;
@@ -681,6 +688,7 @@ string positionkey(Game g)
     }
     return key;
 }
+
 int repetitioncount(const vector<Game> & states)
 {
     string key = positionkey(states.back());
@@ -688,6 +696,7 @@ int repetitioncount(const vector<Game> & states)
     for (Game g: states) if (positionkey(g) == key) count++;
     return count;
 }
+
 bool insufficientmaterial(Game g)
 {
     int count = 0, bishops = 0, firstColour = -1;
@@ -711,6 +720,7 @@ bool insufficientmaterial(Game g)
     }
     return count <= 1 ||(count == bishops && sameColour);
 }
+
 void showhistory(vector<string> history)
 {
     cout << "\nMove History\n";
@@ -722,6 +732,7 @@ void showhistory(vector<string> history)
     }
     cout << endl;
 }
+
 void showhelp()
 {
     ifstream file("help.txt");
@@ -740,6 +751,7 @@ void showhelp()
         cout << "Please type 'exit'.\n";
     }
 }
+
 int choosedifficulty()
 {
     while (true)
@@ -753,6 +765,7 @@ int choosedifficulty()
         else cout << "Invalid choice.\n";
     }
 }
+
 void playgame(Account white, Account black, string mode, int difficulty, bool rated, int humanSide)
 {
     Game start;
@@ -885,6 +898,7 @@ void playgame(Account white, Account black, string mode, int difficulty, bool ra
         if (!found) cout << "Invalid or illegal move. Example: e2e4. Type 'moves' for legal moves.\n";
     }
 }
+
 void gamemenu(Account current)
 {
     while (true)
@@ -929,6 +943,7 @@ void gamemenu(Account current)
         else cout << "Invalid choice.\n";
     }
 }
+
 int main()
 {
     if (!loadaccounts())
