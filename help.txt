@@ -1,0 +1,74 @@
+CHESS GAME - HELP
+
+GAME MODES
+
+1. Registered Player - Play against another account. Elo changes.
+2. Guest - Play against a guest. Elo does not change.
+3. Computer - Play against Easy, Medium or Hard AI. Elo does not change.
+
+CHESS PIECES
+
+K - King
+Q - Queen
+R - Rook
+B - Bishop
+N - Knight
+P - Pawn
+
+Uppercase = White pieces.
+Lowercase = Black pieces.
+. = Empty square.
+
+BOARD LETTERING
+
+Columns: a to h (left to right).
+Rows: 1 to 8 (bottom to top).
+
+Example: e2 means column e, row 2.
+
+HOW TO MOVE
+
+Enter the starting square followed by the ending square.
+
+e2e4 - Move from e2 to e4.
+g1f3 - Move from g1 to f3.
+e1g1 - Castle kingside.
+e7e8q - Promote a pawn to a queen.
+
+PROMOTION LETTERS
+
+q - Queen
+r - Rook
+b - Bishop
+n - Knight
+
+GAME COMMANDS
+
+moves   - Show legal moves.
+history - Show previous moves.
+undo    - Undo moves.
+restart - Restart the game.
+claim   - Claim an available draw.
+resign  - Resign the game.
+help    - Show help.
+exit    - Return to menu (resigns in rated games).
+
+GAME RULES
+
+Check - Your king is under attack.
+Checkmate - Your king cannot escape check.
+Stalemate - No legal moves, but not in check.
+Castling - Special move involving the king and rook.
+En Passant - Special pawn capture.
+Promotion - Replace a pawn reaching the final row.
+
+You win by checkmate or resignation.
+Games can end in a draw.
+
+ELO AND LEADERBOARD
+
+New accounts start at 1000 Elo.
+Registered matches affect Elo (K = 32).
+Guest and computer matches do not affect Elo.
+All completed games update statistics.
+The leaderboard ranks players by Elo.
