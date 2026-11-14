@@ -9,8 +9,8 @@
 #include <climits>
 using namespace std;
 
-mt19937 generator(random_device{}());
-struct Move{
+mt19937 generator(random_device{}()); // Generates random numbers for the computer's moves.
+struct Move{ // Stores information about a chess move.
     int from;
     int to;
     char promotion = ' ';
@@ -18,7 +18,7 @@ struct Move{
     bool castle = false;
 };
 
-struct Game{
+struct Game{ // Stores the current state of the chess game.
     char board[8][8];
     bool whiteTurn = true;
     bool kingMoved[2] = { false, false};
@@ -28,32 +28,30 @@ struct Game{
     int halfmoves = 0;
 };
 
-struct Account{
+struct Account{ // Stores basic player account information.
     int id = 0;
     string username;
     int rating = 1000;
 };
 
-string ask(string message){
+string ask(string message){ // Displays a message and reads the user's input.
     cout << message;
     string answer;
     getline(cin, answer);
     return answer;
 }
 
-string clean(string input){
+string clean(string input){ // Converts input to lowercase and removes spaces.
     string result;
-    for (char letter : input)
-    {
-        if (!isspace((unsigned char)letter))
-        {
+    for (char letter : input){
+        if (!isspace((unsigned char)letter)){
             result += (char)tolower((unsigned char)letter);
         }
     }
     return result;
 }
 
-struct SavedAccount{
+struct SavedAccount{ // Stores account details, passwords and game statistics.
     int id = 0;
     string username;
     string password;
@@ -63,80 +61,67 @@ struct SavedAccount{
     int draws = 0;
 };
 
-vector<SavedAccount> accounts;
-string lowername(string name){
-    for (char &letter : name)
-    {
+vector<SavedAccount> accounts; // Stores all registered player accounts.
+string lowername(string name){ // Converts a username to lowercase for comparison.
+    for (char &letter : name){
         letter = (char)tolower((unsigned char)letter);
     }
     return name;
 }
 
-bool loadaccounts(){
+bool loadaccounts(){ // Loads saved player accounts from accounts.txt.
     ifstream file("accounts.txt");
-    if (!file.is_open())
-    {
+    if (!file.is_open()){
         return true;
     }
     SavedAccount account;
-    while (file >> account.id >> account.username >> account.password >> account.rating >> account.wins >> account.losses >> account.draws)
-    {
+    while (file >> account.id >> account.username >> account.password >> account.rating >> account.wins >> account.losses >> account.draws){
         accounts.push_back(account);
     }
     return file.eof();
 }
 
-bool saveaccounts(){
+bool saveaccounts(){ // Saves player accounts and statistics to accounts.txt.
     ofstream file("accounts.txt");
-    if (!file.is_open())
-    {
+    if (!file.is_open()){
         cout << "Unable to save accounts.txt." << endl;
         return false;
     }
-    for (SavedAccount account:  accounts)
-    {
+    for (SavedAccount account:  accounts){
         file << account.id << " " << account.username << " " << account.password << " " << account.rating << " " << account.wins << " " << account.losses << " " << account.draws << endl;
     }
     return file.good();
 }
 
-int findaccount(string username){
-    for (int i = 0; i <(int) accounts.size(); i++)
-    {
-        if (lowername(accounts[i].username) == lowername(username))
-        {
+int findaccount(string username){ // Finds a registered account using its username.
+    for (int i = 0; i <(int) accounts.size(); i++){
+        if (lowername(accounts[i].username) == lowername(username)){
             return i;
         }
     }
     return - 1;
 }
 
-int findid(int id){
-    for (int i = 0; i <(int) accounts.size(); i++)
-    {
-        if (accounts[i].id == id)
-        {
+int findid(int id){ // Finds a registered account using its unique ID.
+    for (int i = 0; i <(int) accounts.size(); i++){
+        if (accounts[i].id == id){
             return i;
         }
     }
     return - 1;
 }
 
-void createaccount(){
+void createaccount(){ // Creates a new account after validating the username and password.
     string username = ask("\nNew username (or exit): ");
-    if (username == "exit")
-    {
+    if (username == "exit"){
         return;
     }
-    if (username.size() < 3 || username.size() > 24)
-    {
+    if (username.size() < 3 || username.size() > 24){
         cout << "Username must contain 3 to 24 characters." << endl;
         return;
     }
-    for (char letter:  username)
-    {
-        if (!isalnum((unsigned char)letter) && letter != '_')
-        {
+    for (char letter:  username){
+        if (!isalnum((unsigned char)letter) && letter != '_'){
             cout << "Use only letters, numbers or underscores." << endl;
             return;
         }
@@ -147,49 +132,41 @@ void createaccount(){
         return;
     }
     string password = ask("Password (at least 8 characters): ");
-    if (password.size() < 8 || password.find(' ') != string::npos)
-    {
+    if (password.size() < 8 || password.find(' ') != string::npos){
         cout << "Use at least 8 characters and no spaces." << endl;
         return;
     }
-    if (ask("Confirm password: ") != password)
-    {
+    if (ask("Confirm password: ") != password){
         cout << "Passwords do not match." << endl;
         return;
     }
     SavedAccount account;
-    for (SavedAccount existing:  accounts)
-    {
+    for (SavedAccount existing:  accounts){
         account.id = max(account.id, existing.id);
     }
     account.id++;
     account.username = username;
     account.password = password;
     accounts.push_back(account);
-    if (saveaccounts())
-    {
+    if (saveaccounts()){
         cout << "Account created successfully." << endl;
     }
 }
 
-Account login(){
+Account login(){ // Allows a registered player to log in with up to three password attempts.
     Account result;
     string username = ask("\nUsername (or exit): ");
-    if (username == "exit")
-    {
+    if (username == "exit"){
         return result;
     }
     int index = findaccount(username);
-    if (index == - 1)
-    {
+    if (index == - 1){
         cout << "Account not found." << endl;
         return result;
     }
-    for (int attempt = 0; attempt < 3; attempt++)
-    {
+    for (int attempt = 0; attempt < 3; attempt++){
         string password = ask("Password: ");
-        if (password == accounts[index].password)
-        {
+        if (password == accounts[index].password){
             result.id = accounts[index].id;
             result.username = accounts[index].username;
             result.rating = accounts[index].rating;
@@ -201,16 +178,13 @@ Account login(){
     return result;
 }
 
-void leaderboard(){
+void leaderboard(){ // Displays the top 20 players ranked by Elo rating.
     vector<SavedAccount> sorted = accounts;
-    sort(sorted.begin(), sorted.end(),[](SavedAccount a, SavedAccount b)
-    {
-        if (a.rating != b.rating)
-        {
+    sort(sorted.begin(), sorted.end(),[](SavedAccount a, SavedAccount b){
+        if (a.rating != b.rating){
             return a.rating > b.rating;
         }
-        if (a.wins != b.wins)
-        {
+        if (a.wins != b.wins){
             return a.wins > b.wins;
         }
         return a.username < b.username;
@@ -218,17 +192,15 @@ void leaderboard(){
     );
     cout << "\nLeaderboard (Top 20)" << endl;
     cout << "Rank  Username                 Elo    W   L   D" << endl;
-    for (int i = 0; i <(int) sorted.size() && i < 20; i++)
-    {
+    for (int i = 0; i <(int) sorted.size() && i < 20; i++){
         SavedAccount a = sorted[i];
         cout << i + 1 << ".    " << a.username << string(max(1, 25 -(int) a.username.size()), ' ') << a.rating << "   " << a.wins << "   " << a.losses << "   " << a.draws << endl;
     }
 }
 
-void statistics(Account account){
+void statistics(Account account){ // Displays a player's rating, wins, losses, draws and total games.
     int index = findid(account.id);
-    if (index == - 1)
-    {
+    if (index == - 1){
         return;
     }
     SavedAccount a = accounts[index];
@@ -239,49 +211,41 @@ void statistics(Account account){
     cout << "Draws: " << a.draws << endl;
     cout << "Games: " << a.wins + a.losses + a.draws << endl;
 }
-int ratingof(int id)
-{
+int ratingof(int id){ // Returns a player's current Elo rating using their account ID.
     int index = findid(id);
-    if (index == - 1)
-    {
+    if (index == - 1){
         return 1000;
     }
     return accounts[index].rating;
 }
 
-void updateaccount(int id, int change, double score){
+void updateaccount(int id, int change, double score){ // Updates a player's Elo rating and game statistics.
     int index = findid(id);
-    if (index == - 1)
-    {
+    if (index == - 1){
         return;
     }
     accounts[index].rating = max(100, accounts[index].rating + change);
-    if (score == 1)
-    {
+    if (score == 1){
         accounts[index].wins++;
     }
-    else if (score == 0)
-    {
+    else if (score == 0){
         accounts[index].losses++;
     }
-    else
-    {
+    else{
         accounts[index].draws++;
     }
 }
 
-void savegame(Account white, Account black, string mode, double whiteScore, bool rated){
+void savegame(Account white, Account black, string mode, double whiteScore, bool rated){ // Saves the game result and updates player statistics and ratings.
     string result = whiteScore == 1 ?  "White wins":  whiteScore == 0 ?  "Black wins":  "Draw";
     ofstream file("games.txt", ios::app);
-    if (!file.is_open())
-    {
+    if (!file.is_open()){
         cout << "Unable to save games.txt." << endl;
         return;
     }
     file << white.id << " " << black.id << " " << mode << " " << whiteScore << " " << rated << endl;
     file.close();
-    if (rated && white.id && black.id)
-    {
+    if (rated && white.id && black.id){
         int whiteRating = ratingof(white.id);
         int blackRating = ratingof(black.id);
         double expectedWhite = 1.0 /(1.0 + pow(10.0,(blackRating - whiteRating) / 400.0));
@@ -290,43 +254,39 @@ void savegame(Account white, Account black, string mode, double whiteScore, bool
         updateaccount(black.id, - change, 1 - whiteScore);
         cout << "Elo change: " << white.username << " " <<(change >= 0 ?  "+":  "") << change << ", " << black.username << " " <<(- change >= 0 ?  "+":  "") << - change << endl;
     }
-    else
-    {
-        if (white.id)
-        {
+    else{
+        if (white.id){
             updateaccount(white.id, 0, whiteScore);
         }
-        if (black.id)
-        {
+        if (black.id){
             updateaccount(black.id, 0, 1 - whiteScore);
         }
     }
-    if (saveaccounts())
-    {
+    if (saveaccounts()){
         cout << "Game saved. Result: " << result << endl;
     }
 }
 
-bool inside(int r, int c){
+bool inside(int r, int c){ // Checks whether a position is within the chessboard boundaries.
     return r >= 0 && r < 8 && c >= 0 && c < 8;
 }
 
-bool iswhite(char p){
+bool iswhite(char p){ // Checks whether a chess piece belongs to White.
     return p >= 'A' && p <= 'Z';
 }
 
-bool isblack(char p){
+bool isblack(char p){ // Checks whether a chess piece belongs to Black.
     return p >= 'a' && p <= 'z';
 }
 
-bool samecolour(char a, char b){
+bool samecolour(char a, char b){ // Checks whether two pieces belong to the same player.
     return a != '.' && b != '.' && iswhite(a) == iswhite(b);
 }
 
-void setupboard(Game& g){
+void setupboard(Game& g){ // Sets up the chessboard with all pieces in their starting positions.
     string back = "rnbqkbnr";
-    for (int r = 0; r < 8; r++) {
-		for (int c = 0; c < 8; c++) {
+    for (int r = 0; r < 8; r++){
+		for (int c = 0; c < 8; c++){
 			g.board[r][c] = '.';
 		}
 	}
@@ -338,10 +298,9 @@ void setupboard(Game& g){
     }
 }
 
-void showboard(Game g){
+void showboard(Game g){ // Displays the current chessboard in the terminal.
     cout << "\n    a b c d e f g h\n  +-----------------+\n";
-    for (int r = 0; r < 8; r++)
-    {
+    for (int r = 0; r < 8; r++){
         cout << 8 - r << " | ";
         for (int c = 0; c < 8; c++){
 			cout << g.board[r][c] << ' ';
@@ -351,46 +310,35 @@ void showboard(Game g){
     cout << "  +-----------------+\n    a b c d e f g h\nUppercase = White, lowercase = Black\n";
 }
 
-bool squareattacked(Game g, int row, int col, bool white)
-{
+bool squareattacked(Game g, int row, int col, bool white){ // Checks whether a square is attacked by the specified player.
     int direction = white ? -1 : 1;
     char pawn = white ? 'P' : 'p', knight = white ? 'N' : 'n', bishop = white ? 'B' : 'b';
     char rook = white ? 'R' : 'r', queen = white ? 'Q' : 'q', king = white ? 'K' : 'k';
-    for (int side : {-1, 1})
-    {
-        if (inside(row - direction, col + side) && g.board[row - direction][col + side] == pawn)
-        {
+    for (int side : {-1, 1}){
+        if (inside(row - direction, col + side) && g.board[row - direction][col + side] == pawn){
             return true;
         }
     }
     int nr[] = {-2, -2, -1, -1, 1, 1, 2, 2}, nc[] = {-1, 1, -2, 2, -2, 2, -1, 1};
-    for (int i = 0; i < 8; i++)
-    {
-        if (inside(row + nr[i], col + nc[i]) && g.board[row + nr[i]][col + nc[i]] == knight)
-        {
+    for (int i = 0; i < 8; i++){
+        if (inside(row + nr[i], col + nc[i]) && g.board[row + nr[i]][col + nc[i]] == knight){
             return true;
         }
     }
     int dr[] = {-1, -1, -1, 0, 0, 1, 1, 1}, dc[] = {-1, 0, 1, -1, 1, -1, 0, 1};
-    for (int i = 0; i < 8; i++)
-    {
+    for (int i = 0; i < 8; i++){
         int r = row + dr[i], c = col + dc[i], distance = 1;
-        while (inside(r, c))
-        {
+        while (inside(r, c)){
             char piece = g.board[r][c];
-            if (piece != '.')
-            {
-                if (distance == 1 && piece == king)
-                {
+            if (piece != '.'){
+                if (distance == 1 && piece == king){
                     return true;
                 }
                 bool diagonal = dr[i] != 0 && dc[i] != 0;
-                if (diagonal && (piece == bishop || piece == queen))
-                {
+                if (diagonal && (piece == bishop || piece == queen)){
                     return true;
                 }
-                if (!diagonal && (piece == rook || piece == queen))
-                {
+                if (!diagonal && (piece == rook || piece == queen)){
                     return true;
                 }
                 break;
@@ -403,8 +351,7 @@ bool squareattacked(Game g, int row, int col, bool white)
     return false;
 }
 
-bool kingincheck(Game g, bool white)
-{
+bool kingincheck(Game g, bool white){ // Checks whether the specified player's king is in check.
     char king = white ?  'K':  'k';
     for (int r = 0; r < 8; r++){
 		for (int c = 0; c < 8; c++) {
@@ -416,120 +363,133 @@ bool kingincheck(Game g, bool white)
     return true;
 }
 
-void addmove(vector<Move> & moves, Game g, int from, int to, bool ep = false, bool castle = false)
-{
+void addmove(vector<Move> & moves, Game g, int from, int to, bool ep = false, bool castle = false){ // Adds a move to the move list, including possible pawn promotions.
     int row = to / 8;
     char piece = g.board[from / 8][from % 8];
-    if (tolower(piece) == 'p' &&(row == 0 || row == 7))
-    {
-        for (char promotion:  string("qrbn")) {
+    if (tolower(piece) == 'p' &&(row == 0 || row == 7)){
+        for (char promotion:  string("qrbn")){
 			moves.push_back({ from, to, promotion, ep, castle});
 		}
     }
     else moves.push_back({ from, to, ' ', ep, castle});
 }
 
-vector<Move> possiblemoves(Game g)
-{
+vector<Move> possiblemoves(Game g) { // Generates all possible moves for the current player.
     vector<Move> moves;
-    for (int row = 0; row < 8; row++) for (int col = 0; col < 8; col++)
-    {
-        char piece = g.board[row][col];
-        if (piece == '.' || iswhite(piece) != g.whiteTurn) {
-			continue;
-			}
-		
-        int from = row * 8 + col;
-        char type =(char) tolower(piece);
-        if (type == 'p')
-        {
-            int direction = g.whiteTurn ?  - 1:  1, next = row + direction;
-            if (inside(next, col) && g.board[next][col] == '.')
-            {
-                addmove(moves, g, from, next * 8 + col);
-                int two = row + 2 * direction;
-                if (row ==(g.whiteTurn ?  6:  1) && g.board[two][col] == '.') {
-					addmove(moves, g, from, two * 8 + col);
-				}
+    for (int row = 0; row < 8; row++) {
+        for (int col = 0; col < 8; col++) {
+            char piece = g.board[row][col];
+            if (piece == '.' || iswhite(piece) != g.whiteTurn) {
+                continue;
             }
-            for (int side:
-            {
-                - 1, 1
-            }
-            )
-            {
-                int c = col + side;
-                if (!inside(next, c)) {
-					continue;
-				}
-                char target = g.board[next][c];
-                if (target != '.' && ! samecolour(piece, target) && tolower(target) != 'k') {
-					addmove(moves, g, from, next * 8 + c);
-				}
-                if (next == g.epRow && c == g.epCol && target == '.' && g.board[row][c] ==(g.whiteTurn ?  'p':  'P')){
-					addmove(moves, g, from, next * 8 + c, true);
-				}
-            }
-        }
-        else if (type == 'n')
-        {
-            int dr[] = { - 2, - 2, - 1, - 1, 1, 1, 2, 2}, dc[] = { - 1, 1, - 2, 2, - 2, 2, - 1, 1};
-            for (int i = 0; i < 8; i++)
-            {
-                int r = row + dr[i], c = col + dc[i];
-                if (inside(r, c) && ! samecolour(piece, g.board[r][c]) && tolower(g.board[r][c]) != 'k') {
-					addmove(moves, g, from, r * 8 + c);
-				}
-            }
-        }
-        else
-        {
-            int dr[] = { - 1, - 1, - 1, 0, 0, 1, 1, 1}, dc[] = { - 1, 0, 1, - 1, 1, - 1, 0, 1};
-            for (int i = 0; i < 8; i++)
-            {
-                bool diagonal = dr[i] != 0 && dc[i] != 0;
-                if (type == 'b' && ! diagonal) {
-					continue;
-				}
-                if (type == 'r' && diagonal) {
-					continue;
-				}
-                int r = row + dr[i], c = col + dc[i];
-                while (inside(r, c))
-                {
-                    char target = g.board[r][c];
-                    if (samecolour(piece, target) || tolower(target) == 'k') {
-						break;
-					}
-                    addmove(moves, g, from, r * 8 + c);
-                    if (target != '.' || type == 'k') {
-						break;
-					}
-                    r += dr[i];
-                    c += dc[i];
+            int from = row * 8 + col;
+            char type = (char)tolower(piece);
+            if (type == 'p') {
+                int direction = g.whiteTurn ? -1 : 1;
+                int next = row + direction;
+
+                if (inside(next, col) && g.board[next][col] == '.') {
+                    addmove(moves, g, from, next * 8 + col);
+
+                    int two = row + 2 * direction;
+
+                    if (row == (g.whiteTurn ? 6 : 1) && g.board[two][col] == '.') {
+                        addmove(moves, g, from, two * 8 + col);
+                    }
+                }
+                for (int side : {-1, 1}) {
+                    int c = col + side;
+                    if (!inside(next, c)) {
+                        continue;
+                    }
+                    char target = g.board[next][c];
+                    if (target != '.' && !samecolour(piece, target) && tolower(target) != 'k') {
+                        addmove(moves, g, from, next * 8 + c);
+                    }
+                    if (next == g.epRow && c == g.epCol && target == '.' &&
+                        g.board[row][c] == (g.whiteTurn ? 'p' : 'P')) {
+                        addmove(moves, g, from, next * 8 + c, true);
+                    }
                 }
             }
-            if (type == 'k')
-            {
-                int home = g.whiteTurn ?  7:  0, side = g.whiteTurn ?  0:  1;
-                char rook = g.whiteTurn ?  'R':  'r';
-                if (row == home && col == 4 && ! g.kingMoved[side] && ! kingincheck(g, g.whiteTurn))
-                {
-                    if (!g.rookMoved[side][1] && g.board[home][7] == rook && g.board[home][5] == '.' && g.board[home][6] == '.' && ! squareattacked(g, home, 5, ! g.whiteTurn) && ! squareattacked(g, home, 6, ! g.whiteTurn)) {
-						addmove(moves, g, from, home * 8 + 6, false, true);
-					}
-                    if (!g.rookMoved[side][0] && g.board[home][0] == rook && g.board[home][1] == '.' && g.board[home][2] == '.' && g.board[home][3] == '.' && ! squareattacked(g, home, 3, ! g.whiteTurn) && ! squareattacked(g, home, 2, ! g.whiteTurn)) {
-						addmove(moves, g, from, home * 8 + 2, false, true);
-					}
+            else if (type == 'n') {
+                int dr[] = {-2, -2, -1, -1, 1, 1, 2, 2};
+                int dc[] = {-1, 1, -2, 2, -2, 2, -1, 1};
+
+                for (int i = 0; i < 8; i++) {
+                    int r = row + dr[i];
+                    int c = col + dc[i];
+
+                    if (inside(r, c) && !samecolour(piece, g.board[r][c]) &&
+                        tolower(g.board[r][c]) != 'k') {
+                        addmove(moves, g, from, r * 8 + c);
+                    }
+                }
+            }
+            else {
+                int dr[] = {-1, -1, -1, 0, 0, 1, 1, 1};
+                int dc[] = {-1, 0, 1, -1, 1, -1, 0, 1};
+
+                for (int i = 0; i < 8; i++) {
+                    bool diagonal = dr[i] != 0 && dc[i] != 0;
+
+                    if (type == 'b' && !diagonal) {
+                        continue;
+                    }
+                    if (type == 'r' && diagonal) {
+                        continue;
+                    }
+                    int r = row + dr[i];
+                    int c = col + dc[i];
+                    while (inside(r, c)) {
+                        char target = g.board[r][c];
+
+                        if (samecolour(piece, target) || tolower(target) == 'k') {
+                            break;
+                        }
+                        addmove(moves, g, from, r * 8 + c);
+                        if (target != '.' || type == 'k') {
+                            break;
+                        }
+                        r += dr[i];
+                        c += dc[i];
+                    }
+                }
+
+                if (type == 'k') {
+                    int home = g.whiteTurn ? 7 : 0;
+                    int side = g.whiteTurn ? 0 : 1;
+                    char rook = g.whiteTurn ? 'R' : 'r';
+                    if (row == home && col == 4 && !g.kingMoved[side] &&
+                        !kingincheck(g, g.whiteTurn)) {
+                        if (!g.rookMoved[side][1] &&
+                            g.board[home][7] == rook &&
+                            g.board[home][5] == '.' &&
+                            g.board[home][6] == '.' &&
+                            !squareattacked(g, home, 5, !g.whiteTurn) &&
+                            !squareattacked(g, home, 6, !g.whiteTurn)) {
+                            addmove(moves, g, from, home * 8 + 6, false, true);
+                        }
+
+                        if (!g.rookMoved[side][0] &&
+                            g.board[home][0] == rook &&
+                            g.board[home][1] == '.' &&
+                            g.board[home][2] == '.' &&
+                            g.board[home][3] == '.' &&
+                            !squareattacked(g, home, 3, !g.whiteTurn) &&
+                            !squareattacked(g, home, 2, !g.whiteTurn)) {
+                            addmove(moves, g, from, home * 8 + 2, false, true);
+                        }
+                    }
                 }
             }
         }
     }
+
     return moves;
 }
 
-Game makemove(Game g, Move m)
-{
+Game makemove(Game g, Move m){ // Updates the game state after a chess move is made.
     int fr = m.from / 8, fc = m.from % 8, tr = m.to / 8, tc = m.to % 8;
     char piece = g.board[fr][fc], captured = g.board[tr][tc];
     g.board[fr][fc] = '.';
@@ -537,10 +497,8 @@ Game makemove(Game g, Move m)
     if (m.ep) {
 		g.board[fr][tc] = '.';
 	}
-    if (m.castle)
-    {
-        if (tc == 6)
-        {
+    if (m.castle){
+        if (tc == 6){
             g.board[tr][5] = g.board[tr][7];
             g.board[tr][7] = '.';
         }
@@ -570,8 +528,7 @@ Game makemove(Game g, Move m)
 	}
     g.epRow = -1;
     g.epCol = -1;
-    if (tolower(piece) == 'p' && abs(tr - fr) == 2)
-    {
+    if (tolower(piece) == 'p' && abs(tr - fr) == 2){
         g.epRow =(fr + tr) / 2;
         g.epCol = fc;
     }
@@ -580,16 +537,14 @@ Game makemove(Game g, Move m)
     return g;
 }
 
-vector<Move> legalmoves(Game g)
-{
+vector<Move> legalmoves(Game g){ // Generates legal moves that do not leave the player's king in check.
     vector<Move> result;
     for (Move m:  possiblemoves(g)) if (!kingincheck(makemove(g, m), g.whiteTurn)) {
 		result.push_back(m);
 	}
     return result;
 }
-string movetext(Move m)
-{
+string movetext(Move m){ // Converts a chess move into coordinate notation such as e2e4.
     string s;
     s += char('a' + m.from % 8);
     s += char('8' - m.from / 8);
@@ -599,8 +554,7 @@ string movetext(Move m)
     return s;
 }
 
-int piecevalue(char p)
-{
+int piecevalue(char p){ // Returns the numerical value of a chess piece for board evaluation.
     p = (char)tolower(p);
     if (p == 'p') return 100;
     if (p == 'n') return 320;
@@ -610,52 +564,62 @@ int piecevalue(char p)
     return 0;
 }
 
-int evaluateboard(Game g)
-{
+int evaluateboard(Game g) { // Evaluates the board based on piece values and positions.
     int score = 0;
-    for (int r = 0; r < 8; r++)
-    {
-        for (int c = 0; c < 8; c++)
-        {
+    for (int r = 0; r < 8; r++) {
+        for (int c = 0; c < 8; c++) {
             char p = g.board[r][c];
-            if (p == '.') continue;
+            if (p == '.') {
+                continue;
+            }
             int value = piecevalue(p);
-            if (tolower(p) == 'p') value +=(iswhite(p) ? 6 - r: r - 1) * 5;
-            if (tolower(p) == 'n' || tolower(p) == 'b') value +=(3 - abs(3 - c)) * 3;
-            score += iswhite(p) ? value: - value;
+            if (tolower(p) == 'p') {
+                value += (iswhite(p) ? 6 - r : r - 1) * 5;
+            }
+            if (tolower(p) == 'n' || tolower(p) == 'b') {
+                value += (3 - abs(3 - c)) * 3;
+            }
+            score += iswhite(p) ? value : -value;
         }
     }
-    return g.whiteTurn ? score: - score;
+    return g.whiteTurn ? score : -score;
 }
 
-int minimax(Game g, int depth, int alpha, int beta)
-{
+int minimax(Game g, int depth, int alpha, int beta) { // Uses the minimax algorithm with alpha-beta pruning to find the best move.
     vector<Move> moves = legalmoves(g);
-    if (moves.empty()) return kingincheck(g, g.whiteTurn) ? - 100000 - depth: 0;
-    if (g.halfmoves >= 100 || depth == 0) return g.halfmoves >= 100 ? 0: evaluateboard(g);
+    if (moves.empty()) {
+        return kingincheck(g, g.whiteTurn) ? -100000 - depth : 0;
+    }
+    if (g.halfmoves >= 100 || depth == 0) {
+        return g.halfmoves >= 100 ? 0 : evaluateboard(g);
+    }
     int best = -1000000;
-    for (Move m: moves)
-    {
-        int score = - minimax(makemove(g, m), depth - 1, - beta, - alpha);
+    for (Move m : moves) {
+        int score = -minimax(makemove(g, m), depth - 1, -beta, -alpha);
+
         best = max(best, score);
         alpha = max(alpha, score);
-        if (alpha >= beta) break;
+
+        if (alpha >= beta) {
+            break;
+        }
     }
     return best;
 }
 
-Move computermove(Game g, int difficulty)
-{
+Move computermove(Game g, int difficulty) { // Selects a computer move based on the chosen difficulty.
     vector<Move> moves = legalmoves(g);
     shuffle(moves.begin(), moves.end(), generator);
-    if (difficulty == 1) return moves[0];
-    int depth = difficulty == 2 ? 2: 4, best = -1000000;
+    if (difficulty == 1) {
+        return moves[0];
+    }
+    int depth = difficulty == 2 ? 2 : 4;
+    int best = -1000000;
     Move chosen = moves[0];
-    for (Move m: moves)
-    {
-        int score = - minimax(makemove(g, m), depth - 1, - 1000000, 1000000);
-        if (score > best)
-        {
+    for (Move m : moves) {
+        int score = -minimax(makemove(g, m), depth - 1, -1000000, 1000000);
+
+        if (score > best) {
             best = score;
             chosen = m;
         }
@@ -663,312 +627,362 @@ Move computermove(Game g, int difficulty)
     return chosen;
 }
 
-string positionkey(Game g)
-{
+string positionkey(Game g) { // Creates a unique key representing the current chess position.
     string key;
-    for (int r = 0; r < 8; r++)
-    {
-        for (int c = 0; c < 8; c++)
-        {
+    for (int r = 0; r < 8; r++) {
+        for (int c = 0; c < 8; c++) {
             key += g.board[r][c];
         }
     }
-    key += g.whiteTurn ? 'W': 'B';
-    for (int side = 0; side < 2; side++)
-    {
-        key += g.kingMoved[side] ? '1': '0';
-        for (int rook = 0; rook < 2; rook++) key += g.rookMoved[side][rook] ? '1': '0';
+    key += g.whiteTurn ? 'W' : 'B';
+    for (int side = 0; side < 2; side++) {
+        key += g.kingMoved[side] ? '1' : '0';
+
+        for (int rook = 0; rook < 2; rook++) {
+            key += g.rookMoved[side][rook] ? '1' : '0';
+        }
     }
     bool canEp = false;
-    for (Move m: legalmoves(g)) if (m.ep) canEp = true;
-    if (canEp)
-    {
+    for (Move m : legalmoves(g)) {
+        if (m.ep) {
+            canEp = true;
+        }
+    }
+    if (canEp) {
         key += char('0' + g.epRow);
         key += char('0' + g.epCol);
     }
     return key;
 }
 
-int repetitioncount(const vector<Game> & states)
-{
+int repetitioncount(const vector<Game>& states) { // Counts how many times the current board position has occurred.
     string key = positionkey(states.back());
     int count = 0;
-    for (Game g: states) if (positionkey(g) == key) count++;
+    for (Game g : states) {
+        if (positionkey(g) == key) {
+            count++;
+        }
+    }
     return count;
 }
 
-bool insufficientmaterial(Game g)
-{
+bool insufficientmaterial(Game g) { // Checks whether there is insufficient material to achieve checkmate.
     int count = 0, bishops = 0, firstColour = -1;
     bool sameColour = true;
-    for (int r = 0; r < 8; r++)
-    {
-        for (int c = 0; c < 8; c++)
-        {
+    for (int r = 0; r < 8; r++) {
+        for (int c = 0; c < 8; c++) {
             char p = (char)tolower(g.board[r][c]);
-            if (p == '.' || p == 'k') continue;
-            if (p != 'b' && p != 'n') return false;
+            if (p == '.' || p == 'k') {
+                continue;
+            }
+            if (p != 'b' && p != 'n') {
+                return false;
+            }
             count++;
-            if (p == 'b')
-            {
+            if (p == 'b') {
                 bishops++;
                 int colour = (r + c) % 2;
-                if (firstColour != - 1 && colour != firstColour) sameColour = false;
+                if (firstColour != -1 && colour != firstColour) {
+                    sameColour = false;
+                }
                 firstColour = colour;
             }
         }
     }
-    return count <= 1 ||(count == bishops && sameColour);
+    return count <= 1 || (count == bishops && sameColour);
 }
 
-void showhistory(vector<string> history)
-{
+void showhistory(vector<string> history) { // Displays the history of moves played during a game.
     cout << "\nMove History\n";
-    if (history.empty()) cout << "No moves have been played.\n";
-    for (int i = 0; i <(int) history.size(); i++)
-    {
-        if (i % 2 == 0) cout << i / 2 + 1 << ". ";
-        cout << history[i] <<(i % 2 == 1 ? "\n": "  ");
+    if (history.empty()) {
+        cout << "No moves have been played.\n";
+    }
+    for (int i = 0; i < (int)history.size(); i++) {
+        if (i % 2 == 0) {
+            cout << i / 2 + 1 << ". ";
+        }
+        cout << history[i] << (i % 2 == 1 ? "\n" : "  ");
     }
     cout << endl;
 }
 
-void showhelp()
-{
+void showhelp() { // Reads and displays instructions from the help file.
     ifstream file("help.txt");
-    if (!file.is_open())
-    {
+    if (!file.is_open()) {
         cout << "\nThe help file could not be found.\n";
         return;
     }
     cout << "\n";
     string line;
-    while (getline(file, line)) cout << line << endl;
+    while (getline(file, line)) {
+        cout << line << endl;
+    }
     file.close();
-    while (true)
-    {
-        if (clean(ask("\nType 'exit' to return: ")) == "exit") return;
+    while (true) {
+        if (clean(ask("\nType 'exit' to return: ")) == "exit") {
+            return;
+        }
         cout << "Please type 'exit'.\n";
     }
 }
 
-int choosedifficulty()
-{
-    while (true)
-    {
+int choosedifficulty() { // Allows the player to choose the computer difficulty.
+    while (true) {
         cout << "\nChoose Difficulty\n1. Easy\n2. Medium\n3. Hard\n4. Exit\n";
         string choice = ask("\nChoose: ");
-        if (choice == "1") return 1;
-        else if (choice == "2") return 2;
-        else if (choice == "3") return 3;
-        else if (choice == "4") return 0;
-        else cout << "Invalid choice.\n";
+        if (choice == "1") {
+            return 1;
+        }
+        else if (choice == "2") {
+            return 2;
+        }
+        else if (choice == "3") {
+            return 3;
+        }
+        else if (choice == "4") {
+            return 0;
+        }
+        else {
+            cout << "Invalid choice.\n";
+        }
     }
 }
 
-void playgame(Account white, Account black, string mode, int difficulty, bool rated, int humanSide)
-{
+void playgame(Account white, Account black, string mode, int difficulty, bool rated, int humanSide) { // Runs a chess game, processes moves and determines the result.
     Game start;
     setupboard(start);
     vector<Game> states = {start};
     vector<string> history;
     cout << "\nType 'help' for instructions or 'exit' to leave the game at any time.\n";
-    while (true)
-    {
+    while (true) {
         Game g = states.back();
         showboard(g);
         vector<Move> moves = legalmoves(g);
         int repeats = repetitioncount(states);
-        if (moves.empty())
-        {
+        if (moves.empty()) {
             bool check = kingincheck(g, g.whiteTurn);
-            cout <<(check ? "\nCheckmate!\n": "\nStalemate!\n");
-            savegame(white, black, mode, check ?(g.whiteTurn ? 0.0 : 1.0): 0.5, rated);
+
+            cout << (check ? "\nCheckmate!\n" : "\nStalemate!\n");
+            savegame(white, black, mode, check ? (g.whiteTurn ? 0.0 : 1.0) : 0.5, rated);
             return;
         }
-        if (insufficientmaterial(g) || g.halfmoves >= 150 || repeats >= 5)
-        {
+        if (insufficientmaterial(g) || g.halfmoves >= 150 || repeats >= 5) {
             cout << "\nGame drawn automatically.\n";
             savegame(white, black, mode, 0.5, rated);
             return;
         }
-        cout << "\n" <<(g.whiteTurn ? "White": "Black") << " to move";
-        if (kingincheck(g, g.whiteTurn)) cout << " - CHECK";
+        cout << "\n" << (g.whiteTurn ? "White" : "Black") << " to move";
+        if (kingincheck(g, g.whiteTurn)) {
+            cout << " - CHECK";
+        }
         cout << endl;
-        if (mode == "computer" &&(g.whiteTurn ? 1 : -1) != humanSide)
-        {
+        if (mode == "computer" && (g.whiteTurn ? 1 : -1) != humanSide) {
             cout << "Computer is thinking...\n";
+
             Move m = computermove(g, difficulty);
+
             cout << "Computer plays: " << movetext(m) << endl;
+
             history.push_back(movetext(m));
             states.push_back(makemove(g, m));
             continue;
         }
         string choice = clean(ask("\nMove: "));
-        if (choice == "exit")
-        {
-            if (rated)
-            {
+        if (choice == "exit") {
+            if (rated) {
                 cout << "Exiting a rated match counts as resignation.\n";
                 savegame(white, black, mode, g.whiteTurn ? 0.0 : 1.0, rated);
             }
-            else cout << "Game exited without recording a result.\n";
+            else {
+                cout << "Game exited without recording a result.\n";
+            }
             return;
         }
-        else if (choice == "help")
-        {
+        else if (choice == "help") {
             showhelp();
             continue;
         }
-        else if (choice == "moves")
-        {
-            for (Move m: moves) cout << movetext(m) << " ";
+        else if (choice == "moves") {
+            for (Move m : moves) {
+                cout << movetext(m) << " ";
+            }
+
             cout << endl;
             continue;
         }
-        else if (choice == "history")
-        {
+        else if (choice == "history") {
             showhistory(history);
             continue;
         }
-        else if (choice == "undo")
-        {
-            if (rated)
-            {
+        else if (choice == "undo") {
+            if (rated) {
                 cout << "Undo is disabled in rated games.\n";
                 continue;
             }
-            if (states.size() == 1)
-            {
+
+            if (states.size() == 1) {
                 cout << "Nothing to undo.\n";
                 continue;
             }
-            do
-            {
+
+            do {
                 states.pop_back();
                 history.pop_back();
             }
-            while (mode == "computer" && states.size() > 1 &&(states.back().whiteTurn ? 1 : -1) != humanSide);
+            while (mode == "computer" && states.size() > 1 &&
+                   (states.back().whiteTurn ? 1 : -1) != humanSide);
             cout << "Move undone.\n";
             continue;
         }
-        else if (choice == "restart")
-        {
-            if (rated)
-            {
+        else if (choice == "restart") {
+            if (rated) {
                 cout << "Restart is disabled in rated games.\n";
                 continue;
             }
-            if (clean(ask("Restart this game? (yes/no): ")) == "yes")
-            {
+
+            if (clean(ask("Restart this game? (yes/no): ")) == "yes") {
                 states.assign(1, start);
                 history.clear();
                 cout << "Game restarted.\n";
             }
             continue;
         }
-        else if (choice == "claim")
-        {
-            if (repeats >= 3 || g.halfmoves >= 100)
-            {
+        else if (choice == "claim") {
+            if (repeats >= 3 || g.halfmoves >= 100) {
                 cout << "Draw claimed.\n";
                 savegame(white, black, mode, 0.5, rated);
                 return;
             }
+
             cout << "No draw is available to claim.\n";
             continue;
         }
-        else if (choice == "resign")
-        {
-            if (clean(ask("Confirm resignation? (yes/no): ")) == "yes")
-            {
+        else if (choice == "resign") {
+            if (clean(ask("Confirm resignation? (yes/no): ")) == "yes") {
                 savegame(white, black, mode, g.whiteTurn ? 0.0 : 1.0, rated);
                 return;
             }
             continue;
         }
         bool found = false;
-        for (Move m: moves) if (movetext(m) == choice)
-        {
-            history.push_back(choice);
-            states.push_back(makemove(g, m));
-            found = true;
-            break;
+        for (Move m : moves) {
+            if (movetext(m) == choice) {
+                history.push_back(choice);
+                states.push_back(makemove(g, m));
+                found = true;
+                break;
+            }
         }
-        if (!found) cout << "Invalid or illegal move. Example: e2e4. Type 'moves' for legal moves.\n";
+        if (!found) {
+            cout << "Invalid or illegal move. Example: e2e4. Type 'moves' for legal moves.\n";
+        }
     }
 }
 
-void gamemenu(Account current)
-{
-    while (true)
-    {
-        cout << "\nChess Game\nLogged in as: " << current.username << "\n1. Player vs Registered Player\n2. Player vs Guest\n3. Player vs Computer\n4. My Statistics\n5. Leaderboard\n6. Help\n7. Logout\n8. Exit\n";
+void gamemenu(Account current) { // Displays the game menu and allows players to select a game mode.
+    while (true) {
+        cout << "\nChess Game\nLogged in as: " << current.username
+             << "\n1. Player vs Registered Player"
+             << "\n2. Player vs Guest"
+             << "\n3. Player vs Computer"
+             << "\n4. My Statistics"
+             << "\n5. Leaderboard"
+             << "\n6. Help"
+             << "\n7. Logout"
+             << "\n8. Exit\n";
         string choice = ask("\nChoose: ");
-        if (choice == "1")
-        {
+        if (choice == "1") {
             cout << "\nSecond player login\n";
             Account second = login();
-            if (!second.id) continue;
-            if (second.id == current.id)
-            {
+
+            if (!second.id) {
+                continue;
+            }
+
+            if (second.id == current.id) {
                 cout << "You cannot play against your own account.\n";
                 continue;
             }
+
             playgame(current, second, "registered", 0, true, 0);
         }
-        else if (choice == "2") playgame(current, Account{}, "guest", 0, false, 0);
-        else if (choice == "3")
-        {
-            int difficulty = choosedifficulty();
-            if (!difficulty) continue;
-            string colour = ask("1. White\n2. Black\nChoose: ");
-            if (colour == "1") playgame(current, Account{}, "computer", difficulty, false, 1);
-            else if (colour == "2") playgame(Account{}, current, "computer", difficulty, false, - 1);
-            else cout << "Invalid choice.\n";
+        else if (choice == "2") {
+            playgame(current, Account{}, "guest", 0, false, 0);
         }
-        else if (choice == "4") statistics(current);
-        else if (choice == "5") leaderboard();
-        else if (choice == "6") showhelp();
-        else if (choice == "7")
-        {
+        else if (choice == "3") {
+            int difficulty = choosedifficulty();
+
+            if (!difficulty) {
+                continue;
+            }
+
+            string colour = ask("1. White\n2. Black\nChoose: ");
+
+            if (colour == "1") {
+                playgame(current, Account{}, "computer", difficulty, false, 1);
+            }
+            else if (colour == "2") {
+                playgame(Account{}, current, "computer", difficulty, false, -1);
+            }
+            else {
+                cout << "Invalid choice.\n";
+            }
+        }
+        else if (choice == "4") {
+            statistics(current);
+        }
+        else if (choice == "5") {
+            leaderboard();
+        }
+        else if (choice == "6") {
+            showhelp();
+        }
+        else if (choice == "7") {
             cout << "Logged out.\n";
             return;
         }
-        else if (choice == "8")
-        {
+        else if (choice == "8") {
             cout << "Goodbye!\n";
             exit(0);
         }
-        else cout << "Invalid choice.\n";
+        else {
+            cout << "Invalid choice.\n";
+        }
     }
 }
 
-int main()
-{
-    if (!loadaccounts())
-    {
+int main() { // Main function that starts the program and displays the main menu.
+    if (!loadaccounts()) {
         cout << "Unable to read accounts.txt." << endl;
         return 1;
     }
-    while (true)
-    {
+    while (true) {
         cout << "\nChess Game\n1. Login\n2. Create Account\n3. Leaderboard\n4. Help\n5. Exit\n";
         string choice = ask("\nChoose: ");
-        if (choice == "1")
-        {
+
+        if (choice == "1") {
             Account account = login();
-            if (account.id) gamemenu(account);
+
+            if (account.id) {
+                gamemenu(account);
+            }
         }
-        else if (choice == "2") createaccount();
-        else if (choice == "3") leaderboard();
-        else if (choice == "4") showhelp();
-        else if (choice == "5")
-        {
+        else if (choice == "2") {
+            createaccount();
+        }
+        else if (choice == "3") {
+            leaderboard();
+        }
+        else if (choice == "4") {
+            showhelp();
+        }
+        else if (choice == "5") {
             cout << "Goodbye!\n";
             break;
         }
-        else cout << "Invalid choice.\n";
+        else {
+            cout << "Invalid choice.\n";
+        }
     }
     return 0;
 }
